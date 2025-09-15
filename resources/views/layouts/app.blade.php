@@ -9,12 +9,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap">
     <link rel="shortcut icon" href="{{ asset('personal-acc/favicon.ico') }}">
-    <link rel="stylesheet" href="{{ asset('personal-acc/css/style.min.css') }}">
+    @vite(['resources/personal-acc/css/style.css', 'resources/personal-acc/js/app.js'])
     @stack('styles')
 </head>
 <body>
     @yield('content')
-    <script src="{{ asset('personal-acc/js/app.min.js') }}"></script>
     @stack('scripts')
 </body>
 </html>
