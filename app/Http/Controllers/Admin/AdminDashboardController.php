@@ -21,16 +21,14 @@ class AdminDashboardController extends Controller
         $clientOptions = User::query()
             ->where('is_admin', false)
             ->orderBy('name')
-            ->pluck('name', 'id');
+            ->get(['id', 'name'])
+            ->mapWithKeys(function (User $user) {
+                $label = $user->name ?: sprintf('User #%d', $user->id);
 
-        $selectedUserId = $request->integer('user');
-        if ($selectedUserId && ! $clientOptions->has($selectedUserId)) {
-            $selectedUserId = null;
-        }
+                return [$user->id => $label];
+            });
 
-        if (! $selectedUserId && $clientOptions->isNotEmpty()) {
-            $selectedUserId = (int) $clientOptions->keys()->first();
-        }
+        $selectedUserId = $request->integer('user') ?: null;
 
         $selectedUser = null;
         $accounts = collect();
@@ -41,8 +39,9 @@ class AdminDashboardController extends Controller
 
         $selectedAccount = null;
 
-        if ($selectedUserId) {
-            $selectedUser = User::query()
+        $loadSelectedUser = static function (int $userId): ?User {
+            return User::query()
+                ->where('is_admin', false)
                 ->with([
                     'accounts' => function (Relation $query) {
                         $query
@@ -53,21 +52,34 @@ class AdminDashboardController extends Controller
                     'transactions' => fn (Relation $query) => $query->latest()->limit(10),
                     'documents' => fn (Relation $query) => $query->latest()->limit(5),
                     'fraudClaims' => fn (Relation $query) => $query->latest()->limit(5),
-                    'withdrawals' => fn (Relation $query) => $query->latest()->limit(5),
+                    'withdrawals' => function (Relation $query) {
+                        $query->with('fromAccount')->latest()->limit(5);
+                    },
                 ])
-                ->find($selectedUserId);
+                ->find($userId);
+        };
 
-            if ($selectedUser) {
-                $accounts = $selectedUser->accounts;
-                $transactions = $selectedUser->transactions;
-                $documents = $selectedUser->documents;
-                $fraudClaims = $selectedUser->fraudClaims;
-                $withdrawals = $selectedUser->withdrawals;
+        $validUserIds = $clientOptions->keys()->map(static fn ($key) => (int) $key);
 
-                if ($accounts->isNotEmpty()) {
-                    $requestedAccountId = $request->integer('account');
-                    $selectedAccount = $accounts->firstWhere('id', $requestedAccountId) ?? $accounts->first();
-                }
+        if ($selectedUserId !== null && $validUserIds->contains($selectedUserId)) {
+            $selectedUser = $loadSelectedUser($selectedUserId);
+        }
+
+        if (! $selectedUser && $validUserIds->isNotEmpty()) {
+            $selectedUserId = $validUserIds->first();
+            $selectedUser = $loadSelectedUser($selectedUserId);
+        }
+
+        if ($selectedUser) {
+            $accounts = $selectedUser->accounts;
+            $transactions = $selectedUser->transactions;
+            $documents = $selectedUser->documents;
+            $fraudClaims = $selectedUser->fraudClaims;
+            $withdrawals = $selectedUser->withdrawals;
+
+            if ($accounts->isNotEmpty()) {
+                $requestedAccountId = $request->integer('account');
+                $selectedAccount = $accounts->firstWhere('id', $requestedAccountId) ?? $accounts->first();
             }
         }
 
