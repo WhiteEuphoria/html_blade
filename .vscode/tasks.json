@@ -1,0 +1,59 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Setup: Install & bootstrap",
+      "type": "shell",
+      "command": "bash scripts/setup.sh",
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Maintenance: Refresh deps",
+      "type": "shell",
+      "command": "bash scripts/maintenance.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev: Laravel + Queue + Logs + Vite",
+      "type": "shell",
+      "command": "composer run dev",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Dev: Vite only",
+      "type": "shell",
+      "command": "npm run dev",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Dev: PHP server only",
+      "type": "shell",
+      "command": "php artisan serve",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "DB: Migrate",
+      "type": "shell",
+      "command": "php artisan migrate",
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: PHPUnit",
+      "type": "shell",
+      "command": "composer test",
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "Test: Watch",
+      "type": "shell",
+      "command": "bash scripts/watch-tests.sh",
+      "problemMatcher": []
+    }
+  ]
+}
+

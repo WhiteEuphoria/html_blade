@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "austenc.laravel-docs",
+        "github.vscode-github-actions",
+        "mccarter.start-git-bash",
+        "zhuangtongfa.material-theme",
+        "openai.chatgpt",
+        "ms-vscode.vscode-speech"
+    ]
+}
